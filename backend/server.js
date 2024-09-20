@@ -5,6 +5,7 @@ import { v2 as cloudinary } from 'cloudinary';
 
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import postRoutes from "./routes/post.route.js";
 
 import dbConnection from "./DB/dbConnection.js";
 import cookieParser from "cookie-parser";
@@ -31,6 +32,7 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as
 // Routes
 app.use("/api/auth", authRoutes); // Mount the authentication routes at /api/auth
 app.use("/api/user", userRoutes);
+app.use("/api/post", postRoutes);
 
 // Start the server
 app.listen(Port, () => {
