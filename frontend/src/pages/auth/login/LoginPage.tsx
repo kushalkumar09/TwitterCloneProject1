@@ -1,28 +1,64 @@
-import { useState ,ChangeEvent, FormEvent} from "react";
+import { useState ,ChangeEvent} from "react";
 import { Link } from "react-router-dom";
 
 import XSvg from "../../../components/svgs/X.tsx";
 
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
+import {  useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
+type LoginData = {
+	username:string,
+	password: string,
+}
 const LoginPage = () => {
-	const [formData, setFormData] = useState({
+	const [formData, setFormData] = useState<LoginData>({
 		username: "",
 		password: "",
 	});
 
-	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+	const queryClient = useQueryClient();
+
+	const { mutate, isPending, isError, error } = useMutation({
+		mutationFn: async ({ username, password }: LoginData) => {
+		  try {
+			const res = await fetch("/api/auth/login", {
+			  method: "POST", // Fixed capitalization of "POST"
+			  headers: {
+				"Content-Type": "application/json",
+			  },
+			  body: JSON.stringify({ username, password }),
+			});
+	  
+			// If the response is not ok, parse and throw the error message
+			if (!res.ok) {
+			  const errorResponse = await res.json();
+			  throw new Error(errorResponse.error || "Login failed");
+			}
+	  
+			return res.json(); 
+		  } catch (error: any) {
+			console.log("Error during login:", error);
+			toast.error(error.message || "An error occurred during login");
+			throw error;
+		  }
+		},
+		onSuccess:()=>{
+			queryClient.invalidateQueries({queryKey:["authenticatedUser"]});
+			toast.success("You Have Login Successfully...")
+		}
+	  });
+	  
+	  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		console.log(formData);
-		// Add your form submission logic here
+		mutate(formData);
 	  };
 
 	const handleInputChange = (e:ChangeEvent<HTMLInputElement>) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
-
-	const isError = false;
 
 	return (
 		<div className='max-w-screen-xl mx-auto flex h-screen'>
@@ -56,8 +92,10 @@ const LoginPage = () => {
 							value={formData.password}
 						/>
 					</label>
-					<button className='btn rounded-full btn-primary text-white'>Login</button>
-					{isError && <p className='text-red-500'>Something went wrong</p>}
+					<button className='btn rounded-full btn-primary text-white'>{
+						isPending?"Loading...":"Login"
+						}</button>
+					{isError && <p className='text-red-500'>{error.message}</p>}
 				</form>
 				<div className='flex flex-col gap-2 mt-4'>
 					<p className='text-white text-lg'>{"Don't"} have an account?</p>
