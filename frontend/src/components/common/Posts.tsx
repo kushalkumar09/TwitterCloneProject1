@@ -1,58 +1,71 @@
-import React, { useEffect, useState } from 'react';  
-import Post from "./Post";  
-import PostSkeleton from "../skeletons/PostSkeleton";  
-import { POSTS } from "../../utils/db/dummy"; // Assuming POSTS is an array of PostType  
-import { PostType } from './types'; // Adjust the path as necessary  
+import Post from "./Post";
+import PostSkeleton from "../skeletons/PostSkeleton";
+import { PostType } from "./types";
+import { useQuery } from "@tanstack/react-query";
 
-const Posts: React.FC = () => {  
-  const [posts, setPosts] = useState<PostType []>([]);  
-  const [isLoading, setIsLoading] = useState<boolean>(true);  
-  const [error, setError] = useState<string | null>(null);  
+type PostsFeed = {
+  feedType: string;
+};
+const Posts: React.FC<PostsFeed> = ({ feedType }) => {
+  const getFeedTypeEndPoint = () => {
+    switch (feedType) {
+      case "forYou":
+        return "/api/post/all";
+      case "following":
+        console.log(feedType);
+        return "/api/post/following";
+      default:
+        return "/api/post/all";
+    }
+  };
 
-  useEffect(() => {  
-    const fetchPosts = async () => {  
-      try {  
-        // Simulate a fetch operation  
-        setIsLoading(true);  
-        // You can replace this with an actual API call  
-        const fetchedPosts: PostType[] = await new Promise((resolve) => {  
-          setTimeout(() => resolve(POSTS as PostType []), 1000); // Simulating a delay  
-        });  
-        setPosts(fetchedPosts);  
-      } catch (err) {  
-        setError('Failed to load posts. Please try again later.');  
-      } finally {  
-        setIsLoading(false);  
-      }  
-    };  
+  const feedEndPoint = getFeedTypeEndPoint();
+  const {
+    data: posts = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["posts", feedType],
+    queryFn: async () => {
+      try {
+        const res = await fetch(feedEndPoint);
+        const data = await res.json();
 
-    fetchPosts();  
-  }, []);  
+        if (!res.ok) {
+          throw new Error(data.error || "Something Went wrong..");
+        }
+        console.log(data);
+        return data;
+      } catch (error: any) {
+        throw new Error(error);
+      }
+    },
+  });
 
-  return (  
-    <>  
-      {isLoading && (  
-        <div className='flex flex-col justify-center'>  
-          <PostSkeleton />  
-          <PostSkeleton />  
-          <PostSkeleton />  
-        </div>  
-      )}  
-      {!isLoading && error && (  
-        <p className='text-center my-4 text-red-500'>{error}</p>  
-      )}  
-      {!isLoading && posts.length === 0 && (  
-        <p className='text-center my-4'>No posts in this tab. Switch 👻</p>  
-      )}  
-      {!isLoading && posts.length > 0 && (  
-        <div>  
-          {posts.map((post: PostType) => (  
-            <Post key={post._id.toString()} post={post} />  
-          ))}  
-        </div>  
-      )}  
-    </>  
-  );  
-};  
+  return (
+    <>
+      {isLoading && (
+        <div className="flex flex-col justify-center">
+          <PostSkeleton />
+          <PostSkeleton />
+          <PostSkeleton />
+        </div>
+      )}
+      {!isLoading && error && (
+        <p className="text-center my-4 text-red-500">{error.message}</p>
+      )}
+      {!isLoading && posts.length === 0 && (
+        <p className="text-center my-4">No posts in this tab. Switch 👻</p>
+      )}
+      {!isLoading && posts.length > 0 && (
+        <div>
+          {posts.map((post: PostType) => (
+            <Post key={post._id.toString()} post={post} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
 
 export default Posts;
