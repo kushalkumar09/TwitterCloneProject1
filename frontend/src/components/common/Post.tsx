@@ -8,16 +8,18 @@ import { Link } from "react-router-dom";
 import { PostType } from './types'; // Adjust the path as necessary  
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface PostProps {  
-  post: PostType; // The type of the post prop based on PostType  
+  post: PostType; 
+  feedType?:string// The type of the post prop based on PostType  
 }  
 
-const Post: React.FC<PostProps> = ({ post }) => { 
+const Post: React.FC<PostProps> = ({ post ,feedType}) => { 
 	const [comment, setComment] = useState("");
 	const {data:currentUser} = useQuery<PostType>({queryKey:["authenticatedUser"]})
 	const postOwner = post.user;
-	const isLiked = false;
+	const isLiked = post.likes.includes(currentUser?._id??"");
 	const isMyPost = currentUser?._id===postOwner._id;
 
 	const queryClient = useQueryClient();
@@ -47,6 +49,41 @@ const Post: React.FC<PostProps> = ({ post }) => {
 		toast.success("Post Deleted Successfully")
 	}
 })
+    const {mutate:LikePost,isPending:isLiking}=  useMutation({mutationFn:async () => {
+		try {
+			const res = await fetch(`/api/post/like/${post._id}`,{
+				method:"Post"
+			})
+			if(!res.ok){
+				const data = await res.json();
+				throw new Error(data.error??"Something Went Wrong");
+			}
+			const data = await res.json();
+			return data["UsersLikedPost"];
+
+		} catch (error:any) {
+			throw new Error(error.message)
+		}
+	},
+	onSuccess: (updatedLikes: string[]) => {
+		queryClient.setQueryData<PostType[]>(["posts",feedType], (oldData) => {
+	      console.log(oldData);
+		  return oldData?.map((oldPost) => {
+			if (oldPost._id === post._id) {
+			  return {
+				...oldPost,
+				likes: updatedLikes
+			  };
+			}
+			return oldPost;
+		  });
+		});
+	  },
+	onError: (error) => {
+		toast.error(error.message);
+		
+	}
+})
 
 	const showModal = () => {  
 		if (dialogRef.current) {  
@@ -62,7 +99,10 @@ const Post: React.FC<PostProps> = ({ post }) => {
 		e.preventDefault();
 	};
 
-	const handleLikePost = () => {};
+	const handleLikePost = () => {
+		if(isLiking) return;
+		LikePost();
+	};
 
 	return (
 		<>
@@ -168,10 +208,11 @@ const Post: React.FC<PostProps> = ({ post }) => {
 								<span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
 							</div>
 							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
-								{!isLiked && (
+							    {isLiking && <LoadingSpinner/>}
+								{!isLiked && !isLiking && (
 									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
 								)}
-								{isLiked && <FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
+								{isLiked && !isLiking && <FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500' />}
 
 								<span
 									className={`text-sm text-slate-500 group-hover:text-pink-500 ${

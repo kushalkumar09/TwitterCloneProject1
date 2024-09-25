@@ -121,7 +121,6 @@ export const likeUnlikePost = async (req, res) => {
 
     // Update the post's likes
     post.likes = UsersLikedPost;
-
     await post.save(); // Save the changes
     const likeNotification = new Notification({
       from: userId,
@@ -131,6 +130,7 @@ export const likeUnlikePost = async (req, res) => {
 
     await likeNotification.save();
     return res.status(200).json({
+      UsersLikedPost,
       message,
       likes: post.likes,
       likeNotification: likeNotification,

@@ -33,6 +33,7 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
         if (!res.ok) {
           throw new Error(data.error || "Something Went wrong..");
         }
+        console.log("my posts", data)
         return data;
       } catch (error: any) {
         throw new Error(error);
@@ -58,7 +59,7 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
       {!isLoading && posts.length > 0 && (
         <div>
           {posts.map((post: PostType) => (
-            <Post key={post._id.toString()} post={post} />
+            <Post key={post._id.toString()} post={post} feedType={feedType}/>
           ))}
         </div>
       )}
