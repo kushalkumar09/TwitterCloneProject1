@@ -25,12 +25,9 @@ function App() {
 				return null;
 			}
 			if (!response.ok) {  
-				console.log(userData);  
 				throw new Error(userData.message || 'Failed to fetch user data.'); 
-				 
 			}  
-			await delay();  
-			console.log(userData);  
+			await delay(); 
 			return userData;  
 		} catch (error:any) {  
 			toast.error(error.message || 'An error occurred.');  

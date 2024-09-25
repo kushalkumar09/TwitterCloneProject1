@@ -27,7 +27,7 @@ const Port = process.env.PORT || 5000;
 
 // Middleware setup
 app.use(cookieParser()); // Parse Cookie header and populate req.cookies
-app.use(express.json()); // Parse JSON bodies of requests
+app.use(express.json({limit:"5Mb"})); // Parse JSON bodies of requests
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies (as sent by HTML forms)
 
 // Routes

@@ -6,6 +6,8 @@ import { FaTrash } from "react-icons/fa";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { PostType } from './types'; // Adjust the path as necessary  
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface PostProps {  
   post: PostType; // The type of the post prop based on PostType  
@@ -13,10 +15,12 @@ interface PostProps {
 
 const Post: React.FC<PostProps> = ({ post }) => { 
 	const [comment, setComment] = useState("");
+	const {data:currentUser} = useQuery<PostType>({queryKey:["authenticatedUser"]})
 	const postOwner = post.user;
 	const isLiked = false;
+	const isMyPost = currentUser?._id===postOwner._id;
 
-	const isMyPost = true;
+	const queryClient = useQueryClient();
 
 	const formattedDate = "1h";
 
@@ -24,13 +28,35 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
 	const dialogRef = useRef<HTMLDialogElement | null>(null); 
 
+	const {mutate:DeletePost} = useMutation({mutationFn:async()=>{
+		try {
+			const res = await fetch(`/api/post/${post._id}`,{
+				method:"Delete"
+			})
+			if(!res.ok){
+				throw new Error("Something Went Wrong");
+			}
+			const data = await res.json();
+			return data;
+		} catch (error:any) {
+			throw new Error(error.message)
+		}
+	},
+	onSuccess:()=>{
+		queryClient.invalidateQueries({queryKey:["posts"]});
+		toast.success("Post Deleted Successfully")
+	}
+})
+
 	const showModal = () => {  
 		if (dialogRef.current) {  
 			dialogRef.current.showModal();  
 		}  
 	}; 
 
-	const handleDeletePost = () => {};
+	const handleDeletePost = () => {
+		DeletePost();
+	};
 
 	const handlePostComment = (e:React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();

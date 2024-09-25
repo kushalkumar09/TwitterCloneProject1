@@ -12,7 +12,6 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
       case "forYou":
         return "/api/post/all";
       case "following":
-        console.log(feedType);
         return "/api/post/following";
       default:
         return "/api/post/all";
@@ -34,7 +33,6 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
         if (!res.ok) {
           throw new Error(data.error || "Something Went wrong..");
         }
-        console.log(data);
         return data;
       } catch (error: any) {
         throw new Error(error);

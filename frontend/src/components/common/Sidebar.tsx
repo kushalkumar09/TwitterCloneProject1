@@ -17,7 +17,6 @@ const Sidebar = () => {
 	
 	const queryClient = useQueryClient();
 	const {data: userData} = useQuery<UserData>({queryKey:["authenticatedUser"]})
-    console.log(userData);
 	const {mutate:logOut} = useMutation({mutationFn:async()=>{
 		try {
 			const response = await fetch("/api/auth/logout",{

@@ -2,27 +2,54 @@ import React, { useRef, useState, ChangeEvent, FormEvent } from "react";
 import { CiImageOn } from "react-icons/ci";
 import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoCloseSharp } from "react-icons/io5";
+import {  useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 interface CreatePostProps {
   // Add any props here if needed
 }
 
 const CreatePost: React.FC<CreatePostProps> = () => {
+  const {data} = useQuery<any>({queryKey:["authenticatedUser"]})
+  const queryClient = useQueryClient();
+
   const [text, setText] = useState<string>("");
   const [img, setImg] = useState<string | null>(null);
 
   const imgRef = useRef<HTMLInputElement>(null);
 
-  const isPending = false;
-  const isError = false;
+ 
 
-  const data = {
-    profileImg: "/avatars/boy1.png",
-  };
+  const {mutate:createNewPost, isError,isPending,error} = useMutation({mutationFn:async () => {
+    try {
+      const res = await fetch("/api/post/create",{
+        method:"Post",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({text,img})
 
+      })
+      if(!res.ok){
+        const data = await res.json();
+        throw new Error(data.error)
+      }
+      const data = await res.json();
+      return data
+    } catch (error:any) {
+      throw new Error(error.message)
+    }
+  },
+  onSuccess:()=>{
+    setText("");
+    setImg(null)
+    queryClient.invalidateQueries({queryKey:["posts"]})
+    toast.success("Post Created successfully")
+  }
+})
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    alert("Post created successfully");
+    createNewPost();
   };
 
   const handleImgChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -76,7 +103,7 @@ const CreatePost: React.FC<CreatePostProps> = () => {
             {isPending ? "Posting..." : "Post"}
           </button>
         </div>
-        {isError && <div className="text-red-500">Something went wrong</div>}
+        {isError && <div className="text-red-500">{error.message}</div>}
       </form>
     </div>
   );
