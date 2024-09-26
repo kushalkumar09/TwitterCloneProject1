@@ -1,4 +1,5 @@
 // Import necessary modules
+import path from "path"
 import express from "express";
 import dotenv from "dotenv";
 import { v2 as cloudinary } from 'cloudinary';
@@ -20,7 +21,8 @@ cloudinary.config({
 })
 
 // Create an Express application
-const app = express();
+const app = express()
+const __dirname = path.resolve();
 
 // Set the port for the server to run on, defaulting to 5000 if not specified in environment
 const Port = process.env.PORT || 5000;
@@ -35,7 +37,22 @@ app.use("/api/auth", authRoutes); // Mount the authentication routes at /api/aut
 app.use("/api/user", userRoutes);
 app.use("/api/post", postRoutes);
 app.use("/api/notification",notificationRoutes);
+app.use(express.static(path.join(__dirname, "frontend", "dist")));  
 
+// Log the NODE_ENV  
+console.log("NODE_ENV:", process.env.NODE_ENV); // Log the environment  
+
+// Only serve the index.html in production  
+if (process.env.NODE_ENV === "production") {
+  app.get("*", (req, res) => {  
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"), (err) => {  
+      if (err) {  
+        console.error("Error serving index.html:", err);  
+        res.status(err.status).end();  
+      }  
+    });  
+  });  
+} 
 // Start the server
 app.listen(Port, () => {
   console.log(`Server is running at http://localhost:${Port}`);
