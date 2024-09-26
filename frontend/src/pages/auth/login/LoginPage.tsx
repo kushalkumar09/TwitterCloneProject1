@@ -20,18 +20,17 @@ const LoginPage = () => {
 
 	const queryClient = useQueryClient();
 
-	const { mutate, isPending, isError, error } = useMutation({
+	const { mutateAsync, isPending, isError, error } = useMutation({
 		mutationFn: async ({ username, password }: LoginData) => {
 		  try {
 			const res = await fetch("/api/auth/login", {
-			  method: "POST", // Fixed capitalization of "POST"
+			  method: "POST", // Fixed capitalization of "POST" 
 			  headers: {
 				"Content-Type": "application/json",
 			  },
 			  body: JSON.stringify({ username, password }),
 			});
-	  
-			// If the response is not ok, parse and throw the error message
+			
 			if (!res.ok) {
 			  const errorResponse = await res.json();
 			  throw new Error(errorResponse.error || "Login failed");
@@ -53,7 +52,7 @@ const LoginPage = () => {
 	  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		console.log(formData);
-		mutate(formData);
+		mutateAsync(formData);
 	  };
 
 	const handleInputChange = (e:ChangeEvent<HTMLInputElement>) => {

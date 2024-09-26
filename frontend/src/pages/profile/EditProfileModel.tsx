@@ -1,6 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { UserType } from "../../components/common/types";
+import useUpdateUserProfile from "../../hooks/useUpdateProfile";
 
-const EditProfileModal = () => {
+interface EditProfileModalProps {
+	authUser?: UserType;
+  }
+const EditProfileModal: React.FC<EditProfileModalProps> = ({authUser}) => {
 	const [formData, setFormData] = useState({
 		fullName: "",
 		username: "",
@@ -10,18 +15,30 @@ const EditProfileModal = () => {
 		newPassword: "",
 		currentPassword: "",
 	});
-
+    
 	const dialogRef = useRef<HTMLDialogElement | null>(null); 
+
 
 	const showModal = () => {  
 		if (dialogRef.current) {  
 			dialogRef.current.showModal();  
 		}  
 	}; 
-
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {  
+    const {updateProfile,isUpdatingProfile}=useUpdateUserProfile();
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>) => {  
         setFormData({ ...formData, [e.target.name]: e.target.value });  
       };  
+
+	useEffect(()=>{
+		setFormData({
+		...formData,
+		fullName: authUser?.fullName||"",
+		username: authUser?.username || "",
+		email:authUser?.email || "",
+		bio: authUser?.bio||"",
+		link: authUser?.link||"",
+		})
+	},[authUser])
 
 	return (
 		<>
@@ -36,9 +53,10 @@ const EditProfileModal = () => {
 					<h3 className='font-bold text-lg my-3'>Update Profile</h3>
 					<form
 						className='flex flex-col gap-4'
-						onSubmit={(e) => {
+						onSubmit={async(e) => {
 							e.preventDefault();
-							alert("Profile updated successfully");
+							if(isUpdatingProfile)return;
+							await updateProfile(formData);
 						}}
 					>
 						<div className='flex flex-wrap gap-2'>
@@ -73,7 +91,7 @@ const EditProfileModal = () => {
 								className='flex-1 input border border-gray-700 rounded p-2 input-md'
 								value={formData.bio}
 								name='bio'
-								onChange={()=>handleInputChange}
+								onChange={handleInputChange}
 							/>
 						</div>
 						<div className='flex flex-wrap gap-2'>
