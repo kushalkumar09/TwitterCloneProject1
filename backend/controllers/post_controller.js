@@ -71,7 +71,7 @@ export const commentOnPost = async (req, res) => {
       return res.status(400).json({ error: "Text is required for comment" });
     }
     const post = await Post.findById(postId);
-    if (!postId) {
+    if (!post) {
       return res.status(404).json({ error: "Post not found." });
     }
     const comment = {
@@ -80,10 +80,19 @@ export const commentOnPost = async (req, res) => {
     };
     post.comments.push(comment);
     await post.save();
+    const updatedPost = await Post.findById(postId).populate({
+      path: 'comments.user',
+      select: 'username fullName profileImg'
+    });
 
-    return res.status(200).json({ message: "Comment created successfully" });
+    // Get the newly added comment (last one in the array)
+    const newComment = updatedPost.comments[updatedPost.comments.length - 1];
+    return res.status(201).json({
+      message: "Comment created successfully",
+      comment: newComment
+    });
   } catch (error) {
-    console.log(`Error in CommentOnPost : ${error.message}`);
+    console.error(`Error in commentOnPost: ${error.message}`);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };

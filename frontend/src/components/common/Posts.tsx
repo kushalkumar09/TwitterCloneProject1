@@ -33,7 +33,6 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
         if (!res.ok) {
           throw new Error(data.error || "Something Went wrong..");
         }
-        console.log("my posts", data)
         return data;
       } catch (error: any) {
         throw new Error(error);
