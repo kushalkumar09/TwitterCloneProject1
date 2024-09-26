@@ -22,26 +22,32 @@ const LoginPage = () => {
 
 	const { mutateAsync, isPending, isError, error } = useMutation({
 		mutationFn: async ({ username, password }: LoginData) => {
-		  try {
-			const res = await fetch("/api/auth/login", {
-			  method: "POST", // Fixed capitalization of "POST" 
-			  headers: {
-				"Content-Type": "application/json",
-			  },
-			  body: JSON.stringify({ username, password }),
-			});
+			try {
+				const response = await fetch("/api/auth/login", {
+				  method: "POST",
+				  headers: {
+					"Content-Type": "application/json",
+				  },
+				  body: JSON.stringify({ username, password }),
+				});
 			
-			if (!res.ok) {
-			  const errorResponse = await res.json();
-			  throw new Error(errorResponse.error || "Login failed");
-			}
-	  
-			return res.json(); 
-		  } catch (error: any) {
-			console.log("Error during login:", error);
-			toast.error(error.message || "An error occurred during login");
-			throw error;
-		  }
+				if (!response.ok) {
+				  const errorData = await response.json();
+				  throw new Error(errorData.error || "Login failed");
+				}
+			    
+				const data = await response.json();
+				return data;
+			  } catch (error) {
+				if (error instanceof Error) {
+				  console.error("Error during login:", error.message);
+				  toast.error(error.message || "An error occurred during login");
+				} else {
+				  console.error("Unknown error during login");
+				  toast.error("An unknown error occurred during login");
+				}
+				throw error;
+			  }
 		},
 		onSuccess:()=>{
 			queryClient.invalidateQueries({queryKey:["authenticatedUser"]});

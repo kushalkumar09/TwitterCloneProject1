@@ -7,7 +7,7 @@ import { MdOutlineMail } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 interface FormData {
@@ -24,7 +24,7 @@ const SignUpPage = () => {
     fullName: "",
     password: "",
   });
-
+  const queryClient = useQueryClient();
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async ({ email, username, fullName, password }: FormData) => {
       try {
@@ -57,7 +57,10 @@ const SignUpPage = () => {
         throw error;
       }
     },
-    onSuccess: () => toast.success("Account Created Successfully..."),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey:["authenticatedUser"]});
+      toast.success("Account Created Successfully...")
+    },
   });
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {

@@ -108,7 +108,7 @@ export const updateUserProfile = async (req,res) =>{
       if(!isMatch){
         return res.status(400).json({error:"Your current password is not correct"})
       }
-      if (newPassword.length() < 6) {
+      if (newPassword.length < 6) {
         return res
           .status(401)
           .json({ error: "Password length should be greater than 6" });
@@ -147,7 +147,7 @@ export const updateUserProfile = async (req,res) =>{
     return res.status(200).json({user})
     
   }catch (error) {
-    console.log("Error in UpdateUserProfile");
+    console.log("Error in UpdateUserProfile"+ error.message);
     return res.status(500).json({error:"Internal Server Error"})
   }
 }

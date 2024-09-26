@@ -1,7 +1,7 @@
 // Define the structure of the comment  
 export type CommentType = {  
-  _id: string,
-  user: UserType;    // Reference to the User  
+  _id: string;
+  user: UserType;   // Reference to the User  
   text: string;            // Comment text  
 };  
 
