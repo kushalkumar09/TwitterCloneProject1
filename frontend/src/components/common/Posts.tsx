@@ -5,20 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 
 type PostsFeed = {
   feedType: string;
+  username?: string;
+  userId?: string;
 };
-const Posts: React.FC<PostsFeed> = ({ feedType }) => {
-  const getFeedTypeEndPoint = () => {
-    switch (feedType) {
-      case "forYou":
-        return "/api/post/all";
-      case "following":
-        return "/api/post/following";
-      default:
-        return "/api/post/all";
-    }
-  };
-
-  const feedEndPoint = getFeedTypeEndPoint();
+const Posts: React.FC<PostsFeed> = ({ feedType, username, userId }) => {
   const {
     data: posts = [],
     isLoading,
@@ -39,7 +29,22 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
       }
     },
   });
+  const getFeedTypeEndPoint = () => {
+    switch (feedType) {
+      case "forYou":
+        return "/api/post/all";
+      case "following":
+        return "/api/post/following";
+      case "posts":
+        return `/api/post/user/${username}`;
+      case "likes":
+        return `/api/post/likes/${userId}`;
+      default:
+        return "/api/post/all";
+    }
+  };
 
+  const feedEndPoint = getFeedTypeEndPoint();
   return (
     <>
       {isLoading && (
@@ -58,7 +63,7 @@ const Posts: React.FC<PostsFeed> = ({ feedType }) => {
       {!isLoading && posts.length > 0 && (
         <div>
           {posts.map((post: PostType) => (
-            <Post key={post._id.toString()} post={post} feedType={feedType}/>
+            <Post key={post._id.toString()} post={post} feedType={feedType} />
           ))}
         </div>
       )}

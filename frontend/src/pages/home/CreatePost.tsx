@@ -4,13 +4,14 @@ import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoCloseSharp } from "react-icons/io5";
 import {  useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { UserType } from "../../components/common/types";
 
 interface CreatePostProps {
   // Add any props here if needed
 }
 
 const CreatePost: React.FC<CreatePostProps> = () => {
-  const {data} = useQuery<any>({queryKey:["authenticatedUser"]})
+  const {data} = useQuery<UserType>({queryKey:["authenticatedUser"]})
   const queryClient = useQueryClient();
 
   const [text, setText] = useState<string>("");
@@ -67,7 +68,7 @@ const CreatePost: React.FC<CreatePostProps> = () => {
     <div className="flex p-4 items-start gap-4 border-b border-gray-700">
       <div className="avatar">
         <div className="w-8 rounded-full">
-          <img src={data.profileImg || "/avatar-placeholder.png"} alt="Profile" />
+          <img src={data?.profileImg || "/avatar-placeholder.png"} alt="Profile" />
         </div>
       </div>
       <form className="flex flex-col gap-2 w-full" onSubmit={handleSubmit}>

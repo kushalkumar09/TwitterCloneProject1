@@ -5,7 +5,7 @@ import { FaRegBookmark } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { PostType } from './types'; // Adjust the path as necessary  
+import { PostType, UserType } from './types'; // Adjust the path as necessary  
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import LoadingSpinner from "./LoadingSpinner";
@@ -18,7 +18,7 @@ interface PostProps {
 
 const Post: React.FC<PostProps> = ({ post ,feedType}) => { 
 	const [comment, setComment] = useState("");
-	const {data:currentUser} = useQuery<PostType>({queryKey:["authenticatedUser"]})
+	const {data:currentUser} = useQuery<UserType>({queryKey:["authenticatedUser"]})
 	const postOwner = post.user;
 	const isLiked = post.likes.includes(currentUser?._id??"");
 	const isMyPost = currentUser?._id===postOwner._id;

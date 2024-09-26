@@ -1,11 +1,3 @@
-// Define the structure of the user  
-export type UserType = {  
-  _id: string;     // Unique identifier for the user  
-  username: string;        // Username of the user  
-  fullName: string;        // Full name of the user  
-  profileImg?: string;     // Optional profile image URL  
-};  
-
 // Define the structure of the comment  
 export type CommentType = {  
   _id: string,
@@ -21,5 +13,18 @@ export type PostType = {
     user: UserType;             
     comments: CommentType[];  
     likes: string[]; 
+    following?:string[];
     createdAt:string           
+};
+
+export type UserType = {
+  _id: string;
+  fullName: string;
+  username: string;
+  profileImg: string;
+  coverImg: string;
+  bio: string;
+  link: string;
+  following: string[];
+  followers: string[];
 };

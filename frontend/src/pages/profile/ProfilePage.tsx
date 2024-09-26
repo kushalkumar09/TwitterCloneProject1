@@ -1,5 +1,5 @@
-import {  useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import {  useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 import Posts from "../../components/common/Posts";
 import ProfileHeaderSkeleton from "../../components/skeletons/ProfileHeaderSkeleton";
@@ -11,29 +11,46 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";``
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
+import { UserType } from "../../components/common/types";
+import { useQuery } from "@tanstack/react-query";
+import { formatMemberSinceDate } from "../../utils/Date";
 
 const ProfilePage = () => {
 	const [coverImg, setCoverImg] = useState<string | null>(null);  
 	const [profileImg, setProfileImg] = useState<string | null>(null);  
-	const [feedType, setFeedType] = useState<"posts" | "likes">("posts"); 
+	const [feedType, setFeedType] = useState<string>("posts"); 
 
 	const coverImgRef = useRef<HTMLInputElement | null>(null);  
 	const profileImgRef = useRef<HTMLInputElement | null>(null); 
 
-	const isLoading = false;
+	const { username } = useParams();
 	const isMyProfile = true;
 
-	const user = {
-		_id: "1",
-		fullName: "John Doe",
-		username: "johndoe",
-		profileImg: "/avatars/boy2.png",
-		coverImg: "/cover.png",
-		bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-		link: "https://youtube.com/@asaprogrammer_",
-		following: ["1", "2", "3"],
-		followers: ["1", "2", "3"],
-	};
+	const { data: authUser} = useQuery<UserType>({ queryKey: ["authenticatedUser"] });
+	const {
+		data: user,
+		isLoading,
+		refetch,
+		isRefetching,
+	} = useQuery({
+		queryKey: ["userProfile"],
+		queryFn: async () => {
+			try {
+				const res = await fetch(`/api/user/profile/${username}`);
+				const data = await res.json();
+				if (!res.ok) {
+					throw new Error(data.error || "Something went wrong");
+				}
+				return data;
+			} catch (error:any) {
+				throw new Error(error);
+			}
+		},
+	});
+
+	useEffect(()=>{
+		refetch()
+	},[refetch,username,feedType])
 
 	const handleImgChange = (e: React.ChangeEvent<HTMLInputElement>, state: "coverImg" | "profileImg") => {  
 		const file = e.target.files?.[0]; // Optional chaining to prevent errors if files is null  
@@ -55,10 +72,10 @@ const ProfilePage = () => {
 		<>
 			<div className='flex-[4_4_0]  border-r border-gray-700 min-h-screen '>
 				{/* HEADER */}
-				{isLoading && <ProfileHeaderSkeleton />}
-				{!isLoading && !user && <p className='text-center text-lg mt-4'>User not found</p>}
+				{isLoading || isRefetching && <ProfileHeaderSkeleton />}
+				{!isLoading && !isRefetching && !user && <p className='text-center text-lg mt-4'>User not found</p>}
 				<div className='flex flex-col'>
-					{!isLoading && user && (
+					{!isLoading && !isRefetching && user && (
 						<>
 							<div className='flex gap-10 px-4 py-2 items-center'>
 								<Link to='/'>
@@ -159,7 +176,7 @@ const ProfilePage = () => {
 									)}
 									<div className='flex gap-2 items-center'>
 										<IoCalendarOutline className='w-4 h-4 text-slate-500' />
-										<span className='text-sm text-slate-500'>Joined July 2021</span>
+										<span className='text-sm text-slate-500'> {formatMemberSinceDate(user?.createdAt)}</span>
 									</div>
 								</div>
 								<div className='flex gap-2'>
@@ -196,7 +213,7 @@ const ProfilePage = () => {
 						</>
 					)}
 
-					<Posts feedType={feedType}/>
+					<Posts feedType={feedType} userId={user?._id} username={username}/>
 				</div>
 			</div>
 		</>

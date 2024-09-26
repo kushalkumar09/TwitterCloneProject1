@@ -7,16 +7,12 @@ import { Link } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { UserType } from "./types.ts";
 
-type UserData = {
-	fullName:string,
-	username:string,
-	profileImg:string,
-}
 const Sidebar = () => {
 	
 	const queryClient = useQueryClient();
-	const {data: userData} = useQuery<UserData>({queryKey:["authenticatedUser"]})
+	const {data: userData} = useQuery<UserType>({queryKey:["authenticatedUser"]})
 	const {mutate:logOut} = useMutation({mutationFn:async()=>{
 		try {
 			const response = await fetch("/api/auth/logout",{
